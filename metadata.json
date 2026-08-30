@@ -1,0 +1,6 @@
+{
+  "name": "Quản Lý & Thống Kê Bệnh Nhân Tiêu Hoá - Gan Mật (Gan, IBD, IBS)",
+  "description": "Hệ thống quản lý hồ sơ bệnh án, theo dõi diễn tiến qua từng đợt tái khám theo mã số bệnh nhân, nhập xét nghiệm chuyên sâu, thống kê phân tích số liệu lâm sàng Gan, IBD, IBS.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
