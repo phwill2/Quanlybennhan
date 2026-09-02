@@ -1,63 +1,4 @@
 import { PatientRecord } from '../types';
-import { INITIAL_PATIENTS } from '../data/initialData';
-
-const STORAGE_KEY = 'gi_liver_patients_data_v1';
-
-export function getStoredPatients(): PatientRecord[] {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) {
-      // First time initialization
-      saveStoredPatients(INITIAL_PATIENTS);
-      return INITIAL_PATIENTS;
-    }
-    const parsed = JSON.parse(raw);
-    if (Array.isArray(parsed) && parsed.length > 0) {
-      // Normalize doctor names if they had old demo doctor names
-      const normalized = parsed.map((p: PatientRecord) => {
-        const isOldDoc = !p.doctorInCharge || 
-          p.doctorInCharge.includes('Trần Quốc Bảo') || 
-          p.doctorInCharge.includes('Nguyễn Mai Trang') || 
-          p.doctorInCharge.includes('Vũ Thành Đạt') || 
-          p.doctorInCharge.includes('Nguyễn Minh');
-
-        const updatedDoc = isOldDoc ? 'Bác sĩ Đỗ Trung Hiếu' : p.doctorInCharge;
-
-        const updatedVisits = p.visits ? p.visits.map(v => {
-          const isOldVisitDoc = !v.doctorInCharge || 
-            v.doctorInCharge.includes('Trần Quốc Bảo') || 
-            v.doctorInCharge.includes('Nguyễn Mai Trang') || 
-            v.doctorInCharge.includes('Vũ Thành Đạt') || 
-            v.doctorInCharge.includes('Nguyễn Minh');
-          return {
-            ...v,
-            doctorInCharge: isOldVisitDoc ? 'Bác sĩ Đỗ Trung Hiếu' : v.doctorInCharge
-          };
-        }) : [];
-
-        return {
-          ...p,
-          doctorInCharge: updatedDoc,
-          visits: updatedVisits
-        };
-      });
-
-      return normalized;
-    }
-    return INITIAL_PATIENTS;
-  } catch (err) {
-    console.error('Error reading patients from localStorage:', err);
-    return INITIAL_PATIENTS;
-  }
-}
-
-export function saveStoredPatients(patients: PatientRecord[]): void {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(patients));
-  } catch (err) {
-    console.error('Error saving patients to localStorage:', err);
-  }
-}
 
 export function generateNextPatientCode(patients: PatientRecord[]): string {
   const currentYear = new Date().getFullYear();
@@ -205,6 +146,37 @@ export function exportPatientsToCSV(patients: PatientRecord[]): void {
   URL.revokeObjectURL(url);
 }
 
+export const LOCAL_STORAGE_KEY = 'gi_track_patients_v1';
+export const LOCAL_STORAGE_BACKUP_KEY = 'gi_track_patients_backup';
+
+export function getLocalCachedPatients(): PatientRecord[] {
+  try {
+    const keys = [LOCAL_STORAGE_KEY, LOCAL_STORAGE_BACKUP_KEY, 'gi_track_patients', 'patients'];
+    for (const k of keys) {
+      const raw = localStorage.getItem(k);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed;
+        }
+      }
+    }
+  } catch {
+    // ignore
+  }
+  return [];
+}
+
+export function saveLocalBackup(patients: PatientRecord[]): void {
+  try {
+    if (patients && patients.length > 0) {
+      localStorage.setItem(LOCAL_STORAGE_BACKUP_KEY, JSON.stringify(patients));
+    }
+  } catch {
+    // ignore
+  }
+}
+
 export function importPatientsFromJSON(jsonString: string): { success: boolean; data?: PatientRecord[]; error?: string } {
   try {
     const parsed = JSON.parse(jsonString);
@@ -219,7 +191,6 @@ export function importPatientsFromJSON(jsonString: string): { success: boolean; 
     if (!isValid) {
       return { success: false, error: 'Dữ liệu không đúng cấu trúc bệnh nhân (thiếu Họ tên hoặc Nhóm bệnh).' };
     }
-    saveStoredPatients(parsed);
     return { success: true, data: parsed };
   } catch (err) {
     return { success: false, error: `Lỗi đọc file JSON: ${(err as Error).message}` };
