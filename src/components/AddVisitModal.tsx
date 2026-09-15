@@ -11,7 +11,11 @@ import {
   Pill, 
   FileText, 
   TrendingUp,
-  AlertCircle
+  AlertCircle,
+  Link2,
+  ExternalLink,
+  ShieldCheck,
+  ShieldAlert
 } from 'lucide-react';
 import { 
   calculateFIB4, 
@@ -89,6 +93,9 @@ export const AddVisitModal: React.FC<AddVisitModalProps> = ({
   const [wbc, setWbc] = useState<number | undefined>(initialVisit?.ibdLabs?.wbc ?? patient.ibdLabs?.wbc);
   const [diseaseActivity, setDiseaseActivity] = useState<any>(initialVisit?.ibdLabs?.diseaseActivity || patient.ibdLabs?.diseaseActivity || 'Thuyên giảm (Remission)');
   const [endoscopyScore, setEndoscopyScore] = useState<string>(initialVisit?.ibdLabs?.endoscopyScore || patient.ibdLabs?.endoscopyScore || '');
+  const [endoscopyLink, setEndoscopyLink] = useState<string>(initialVisit?.ibdLabs?.endoscopyLink || patient.ibdLabs?.endoscopyLink || '');
+  const [tbExcluded, setTbExcluded] = useState<boolean>(initialVisit?.ibdLabs?.tbExcluded ?? patient.ibdLabs?.tbExcluded ?? false);
+  const [tbNotes, setTbNotes] = useState<string>(initialVisit?.ibdLabs?.tbNotes || patient.ibdLabs?.tbNotes || '');
 
   // IBS labs
   const [romeIVSubtype, setRomeIVSubtype] = useState<any>(initialVisit?.ibsLabs?.romeIVSubtype || patient.ibsLabs?.romeIVSubtype || 'IBS-D');
@@ -152,7 +159,7 @@ export const AddVisitModal: React.FC<AddVisitModalProps> = ({
     }
 
     // Attach IBD labs if relevant
-    if (patient.primaryCategory === 'ibd' || patient.primaryCategory === 'mixed' || fecalCalprotectin !== undefined || crp !== undefined) {
+    if (patient.primaryCategory === 'ibd' || patient.primaryCategory === 'mixed' || fecalCalprotectin !== undefined || crp !== undefined || endoscopyLink || tbExcluded) {
       newVisit.ibdLabs = {
         fecalCalprotectin,
         crp,
@@ -161,6 +168,9 @@ export const AddVisitModal: React.FC<AddVisitModalProps> = ({
         wbc,
         diseaseActivity,
         endoscopyScore,
+        endoscopyLink: endoscopyLink.trim() || undefined,
+        tbExcluded,
+        tbNotes: tbNotes.trim() || undefined,
       };
     }
 
@@ -452,6 +462,79 @@ export const AddVisitModal: React.FC<AddVisitModalProps> = ({
                     <option value="Hoạt động nặng">Hoạt động nặng</option>
                   </select>
                 </div>
+
+                <div className="col-span-2">
+                  <label className="block text-[11px] font-medium text-slate-700 mb-1">Điểm / Kết quả nội soi (Mayo / SES-CD)</label>
+                  <input
+                    type="text"
+                    placeholder="VD: Mayo subscore 1 hoặc SES-CD 4 điểm"
+                    value={endoscopyScore}
+                    onChange={(e) => setEndoscopyScore(e.target.value)}
+                    className="w-full px-2.5 py-1.5 bg-white border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-teal-500 focus:outline-hidden"
+                  />
+                </div>
+
+                <div className="col-span-2">
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-[11px] font-medium text-slate-700 flex items-center gap-1.5">
+                      <Link2 className="h-3.5 w-3.5 text-teal-600" />
+                      <span>Link nội soi đợt này (Ảnh / Video / Drive / PACS)</span>
+                    </label>
+                    {endoscopyLink && (
+                      <a
+                        href={endoscopyLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[10px] text-teal-600 hover:text-teal-700 font-semibold flex items-center gap-1 underline"
+                      >
+                        <span>Mở xem</span>
+                        <ExternalLink className="h-2.5 w-2.5" />
+                      </a>
+                    )}
+                  </div>
+                  <input
+                    type="url"
+                    placeholder="https://drive.google.com/..."
+                    value={endoscopyLink}
+                    onChange={(e) => setEndoscopyLink(e.target.value)}
+                    className="w-full px-2.5 py-1.5 bg-white border border-slate-200 rounded-xl text-xs font-mono focus:ring-2 focus:ring-teal-500 focus:outline-hidden"
+                  />
+                </div>
+              </div>
+
+              {/* TB Exclusion Box in Visit */}
+              <div className={`p-3 rounded-xl border transition-all ${
+                tbExcluded ? 'bg-emerald-50/80 border-emerald-300' : 'bg-amber-50/80 border-amber-300'
+              }`}>
+                <label className="flex items-start gap-2.5 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={tbExcluded}
+                    onChange={(e) => setTbExcluded(e.target.checked)}
+                    className="mt-0.5 h-4 w-4 rounded border-slate-300 text-teal-600 focus:ring-teal-500 cursor-pointer"
+                  />
+                  <div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-xs font-bold text-slate-900">
+                        Đã loại trừ lao ruột (Intestinal TB Excluded)
+                      </span>
+                      {tbExcluded ? (
+                        <span className="inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-emerald-100 text-emerald-800">
+                          <ShieldCheck className="h-3 w-3 text-emerald-600" />
+                          Đã loại trừ
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-amber-100 text-amber-800">
+                          <ShieldAlert className="h-3 w-3 text-amber-600" />
+                          Chưa loại trừ
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-[11px] text-slate-600 mt-0.5">
+                      Bắt buộc kiểm tra GeneXpert, IGRA, sinh thiết trước khi tăng liều hoặc chỉ định thuốc sinh học Anti-TNF.
+                    </p>
+                  </div>
+                </label>
               </div>
             </div>
           )}

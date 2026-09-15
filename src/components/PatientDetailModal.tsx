@@ -16,7 +16,11 @@ import {
   AlertCircle,
   FileText,
   Activity,
-  CheckCircle2
+  CheckCircle2,
+  Link2,
+  ExternalLink,
+  ShieldCheck,
+  ShieldAlert
 } from 'lucide-react';
 import { 
   LAB_REFERENCE_RANGES, 
@@ -206,6 +210,35 @@ export const PatientDetailModal: React.FC<PatientDetailModalProps> = ({
                 <div className="text-[11px] text-slate-600">
                   CRP: <strong>{patient.ibdLabs?.crp ? `${patient.ibdLabs.crp} mg/L` : '--'}</strong> • ESR:{' '}
                   <strong>{patient.ibdLabs?.esr ? `${patient.ibdLabs.esr} mm/h` : '--'}</strong>
+                </div>
+
+                <div className="pt-2 mt-2 border-t border-rose-200/60 flex items-center justify-between flex-wrap gap-2">
+                  <div className="flex items-center gap-1.5">
+                    {patient.ibdLabs?.tbExcluded ? (
+                      <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">
+                        <ShieldCheck className="h-3 w-3 text-emerald-600" />
+                        Đã loại trừ lao ruột
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-300">
+                        <ShieldAlert className="h-3 w-3 text-amber-600" />
+                        Chưa loại trừ lao ruột
+                      </span>
+                    )}
+                  </div>
+
+                  {patient.ibdLabs?.endoscopyLink && (
+                    <a
+                      href={patient.ibdLabs.endoscopyLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-[11px] font-semibold text-rose-700 hover:text-rose-900 bg-white/80 px-2 py-0.5 rounded-lg border border-rose-200 shadow-2xs hover:bg-white transition"
+                    >
+                      <Link2 className="h-3 w-3" />
+                      <span>Xem ảnh nội soi</span>
+                      <ExternalLink className="h-2.5 w-2.5" />
+                    </a>
+                  )}
                 </div>
               </div>
             )}
@@ -404,6 +437,48 @@ export const PatientDetailModal: React.FC<PatientDetailModalProps> = ({
                       <td className="py-2 px-3 font-medium text-slate-800">Nội Soi Đại Trực Tràng</td>
                       <td colSpan={3} className="py-2 px-3 text-slate-700 font-medium">
                         {patient.ibdLabs.endoscopyScore}
+                      </td>
+                    </tr>
+                  )}
+                  {patient.ibdLabs?.endoscopyLink && (
+                    <tr>
+                      <td className="py-2 px-3 font-medium text-slate-800">Link Kết Quả Nội Soi</td>
+                      <td colSpan={3} className="py-2 px-3">
+                        <a
+                          href={patient.ibdLabs.endoscopyLink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 text-xs font-semibold text-teal-600 hover:text-teal-800 underline bg-teal-50 px-2.5 py-1 rounded-lg border border-teal-200"
+                        >
+                          <Link2 className="h-3.5 w-3.5" />
+                          <span>Mở xem hình ảnh / clip nội soi trực tuyến</span>
+                          <ExternalLink className="h-3 w-3" />
+                        </a>
+                      </td>
+                    </tr>
+                  )}
+                  {patient.ibdLabs && (patient.ibdLabs.tbExcluded !== undefined || patient.ibdLabs.tbNotes) && (
+                    <tr className={patient.ibdLabs.tbExcluded ? 'bg-emerald-50/40' : 'bg-amber-50/40'}>
+                      <td className="py-2 px-3 font-medium text-slate-800">Tầm Soát Lao Ruột</td>
+                      <td colSpan={3} className="py-2 px-3">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          {patient.ibdLabs.tbExcluded ? (
+                            <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">
+                              <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" />
+                              Đã loại trừ lao ruột (Đủ điều kiện an toàn dùng Corticoid / Biologics)
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-300">
+                              <ShieldAlert className="h-3.5 w-3.5 text-amber-600" />
+                              Chưa loại trừ lao ruột (Cần tầm soát trước khi dùng ức chế miễn dịch)
+                            </span>
+                          )}
+                          {patient.ibdLabs.tbNotes && (
+                            <span className="text-xs text-slate-600 italic">
+                              — {patient.ibdLabs.tbNotes}
+                            </span>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   )}

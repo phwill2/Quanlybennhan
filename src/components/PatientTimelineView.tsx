@@ -20,6 +20,9 @@ import {
   Flame, 
   Zap, 
   ShieldCheck, 
+  ShieldAlert,
+  Link2,
+  ExternalLink,
   ChevronRight,
   Stethoscope,
   Pill,
@@ -691,6 +694,45 @@ export const PatientTimelineView: React.FC<PatientTimelineViewProps> = ({
                                 </div>
                               )}
                             </div>
+
+                            {/* Endoscopy Link & TB Exclusion Footer in Visit */}
+                            {(visit.ibdLabs.endoscopyScore || visit.ibdLabs.endoscopyLink || visit.ibdLabs.tbExcluded !== undefined) && (
+                              <div className="mt-2.5 pt-2.5 border-t border-teal-100 flex flex-wrap items-center justify-between gap-2 text-xs">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  {visit.ibdLabs.tbExcluded !== undefined && (
+                                    visit.ibdLabs.tbExcluded ? (
+                                      <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 border border-emerald-200">
+                                        <ShieldCheck className="h-3 w-3 text-emerald-600" />
+                                        Đã loại trừ lao ruột
+                                      </span>
+                                    ) : (
+                                      <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-md bg-amber-100 text-amber-800 border border-amber-200">
+                                        <ShieldAlert className="h-3 w-3 text-amber-600" />
+                                        Chưa loại trừ lao ruột
+                                      </span>
+                                    )
+                                  )}
+                                  {visit.ibdLabs.endoscopyScore && (
+                                    <span className="text-[11px] text-teal-950 font-medium">
+                                      <strong>Nội soi:</strong> {visit.ibdLabs.endoscopyScore}
+                                    </span>
+                                  )}
+                                </div>
+
+                                {visit.ibdLabs.endoscopyLink && (
+                                  <a
+                                    href={visit.ibdLabs.endoscopyLink}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center gap-1 text-[11px] font-bold text-teal-700 hover:text-teal-900 underline bg-white px-2 py-0.5 rounded-md border border-teal-200 shadow-2xs"
+                                  >
+                                    <Link2 className="h-3 w-3" />
+                                    <span>Mở link nội soi</span>
+                                    <ExternalLink className="h-2.5 w-2.5" />
+                                  </a>
+                                )}
+                              </div>
+                            )}
                           </div>
                         )}
 
@@ -1000,6 +1042,61 @@ export const PatientTimelineView: React.FC<PatientTimelineViewProps> = ({
                           {chronologicalHistory.map((item) => (
                             <td key={item.id} className="py-2.5 px-4">
                               {item.ibdLabs?.diseaseActivity || '-'}
+                            </td>
+                          ))}
+                        </tr>
+                        <tr>
+                          <td className="py-2.5 px-4 font-semibold text-slate-900">Nội soi & Link ảnh</td>
+                          {chronologicalHistory.map((item) => (
+                            <td key={item.id} className="py-2.5 px-4">
+                              {item.ibdLabs?.endoscopyScore ? (
+                                <div className="space-y-1">
+                                  <div className="text-[11px] font-medium text-slate-800 line-clamp-2">
+                                    {item.ibdLabs.endoscopyScore}
+                                  </div>
+                                  {item.ibdLabs.endoscopyLink && (
+                                    <a
+                                      href={item.ibdLabs.endoscopyLink}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="inline-flex items-center gap-1 text-[10px] text-teal-600 hover:text-teal-800 font-bold underline"
+                                    >
+                                      <span>Mở ảnh</span>
+                                      <ExternalLink className="h-2.5 w-2.5" />
+                                    </a>
+                                  )}
+                                </div>
+                              ) : item.ibdLabs?.endoscopyLink ? (
+                                <a
+                                  href={item.ibdLabs.endoscopyLink}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1 text-[10px] text-teal-600 hover:text-teal-800 font-bold underline"
+                                >
+                                  <span>Mở ảnh nội soi</span>
+                                  <ExternalLink className="h-2.5 w-2.5" />
+                                </a>
+                              ) : '-'}
+                            </td>
+                          ))}
+                        </tr>
+                        <tr>
+                          <td className="py-2.5 px-4 font-semibold text-slate-900">Loại trừ lao ruột</td>
+                          {chronologicalHistory.map((item) => (
+                            <td key={item.id} className="py-2.5 px-4">
+                              {item.ibdLabs?.tbExcluded !== undefined ? (
+                                item.ibdLabs.tbExcluded ? (
+                                  <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
+                                    <ShieldCheck className="h-3 w-3 text-emerald-600" />
+                                    Đã loại trừ
+                                  </span>
+                                ) : (
+                                  <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800">
+                                    <ShieldAlert className="h-3 w-3 text-amber-600" />
+                                    Chưa loại trừ
+                                  </span>
+                                )
+                              ) : '-'}
                             </td>
                           ))}
                         </tr>

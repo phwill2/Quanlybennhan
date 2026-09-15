@@ -21,7 +21,11 @@ import {
   AlertCircle,
   HelpCircle,
   CheckCircle2,
-  Calendar
+  Calendar,
+  Link2,
+  ExternalLink,
+  ShieldCheck,
+  ShieldAlert
 } from 'lucide-react';
 import { 
   calculateFIB4, 
@@ -949,6 +953,88 @@ export const PatientFormModal: React.FC<PatientFormModalProps> = ({
                     value={ibdLabs.endoscopyScore || ''}
                     onChange={(e) => setIbdLabs({ ...ibdLabs, endoscopyScore: e.target.value })}
                     className="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 bg-white"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1 flex items-center justify-between">
+                    <span className="flex items-center gap-1.5">
+                      <Link2 className="h-3.5 w-3.5 text-teal-600" />
+                      <span>Link Nội Soi (Hình ảnh / Video / PACS / Google Drive)</span>
+                    </span>
+                    {ibdLabs.endoscopyLink && (
+                      <a
+                        href={ibdLabs.endoscopyLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[11px] text-teal-600 hover:text-teal-700 font-semibold flex items-center gap-1 underline"
+                      >
+                        <span>Mở xem thử</span>
+                        <ExternalLink className="h-3 w-3" />
+                      </a>
+                    )}
+                  </label>
+                  <input
+                    type="url"
+                    placeholder="VD: https://drive.google.com/file/... hoặc link lưu trữ ảnh nội soi"
+                    value={ibdLabs.endoscopyLink || ''}
+                    onChange={(e) => setIbdLabs({ ...ibdLabs, endoscopyLink: e.target.value })}
+                    className="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 bg-white font-mono text-xs focus:ring-2 focus:ring-teal-500"
+                  />
+                  <p className="text-[11px] text-slate-400 mt-1">
+                    Đính kèm đường link dẫn đến album ảnh nội soi, clip nội soi đại tràng hoặc file kết quả giải phẫu bệnh.
+                  </p>
+                </div>
+              </div>
+
+              {/* Lao Ruột (Intestinal Tuberculosis) Exclusion Section */}
+              <div className={`p-4 rounded-2xl border transition-all ${
+                ibdLabs.tbExcluded 
+                  ? 'bg-emerald-50/80 border-emerald-300' 
+                  : 'bg-amber-50/80 border-amber-300'
+              }`}>
+                <div className="flex items-start justify-between gap-3">
+                  <label className="flex items-start gap-3 cursor-pointer select-none flex-1">
+                    <input
+                      type="checkbox"
+                      checked={!!ibdLabs.tbExcluded}
+                      onChange={(e) => setIbdLabs({ ...ibdLabs, tbExcluded: e.target.checked })}
+                      className="mt-0.5 h-4 w-4 rounded border-slate-300 text-teal-600 focus:ring-teal-500 cursor-pointer"
+                    />
+                    <div>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-xs sm:text-sm font-bold text-slate-900">
+                          Đã loại trừ lao ruột (Intestinal Tuberculosis Excluded)
+                        </span>
+                        {ibdLabs.tbExcluded ? (
+                          <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">
+                            <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" />
+                            Đã loại trừ lao ruột
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-300">
+                            <ShieldAlert className="h-3.5 w-3.5 text-amber-600" />
+                            Chưa loại trừ lao ruột
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs text-slate-600 mt-1 leading-relaxed">
+                        <strong className="text-slate-800">Cảnh báo lâm sàng:</strong> Bắt buộc loại trừ lao ruột trước khi khởi động phác đồ ức chế miễn dịch (Corticoid liều cao, Azathioprine) hoặc chế phẩm sinh học (Anti-TNF, Infliximab) để tránh bùng phát lao toàn thể nguy kịch.
+                      </p>
+                    </div>
+                  </label>
+                </div>
+
+                <div className="mt-3 pt-3 border-t border-slate-200/60">
+                  <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                    Ghi chú tầm soát lao (X-quang phổi, Quantiferon-TB / IGRA, GeneXpert, Giải phẫu bệnh u hạt...)
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="VD: Quantiferon-TB âm tính, GeneXpert mô sinh thiết âm tính, không có u hạt bã đậu"
+                    value={ibdLabs.tbNotes || ''}
+                    onChange={(e) => setIbdLabs({ ...ibdLabs, tbNotes: e.target.value })}
+                    className="w-full px-3 py-1.5 text-xs rounded-xl border border-slate-200 bg-white"
                   />
                 </div>
               </div>

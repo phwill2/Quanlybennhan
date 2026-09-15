@@ -86,6 +86,9 @@ export interface IBDLabData {
   ferritin?: number; // ng/mL - Normal ~30-300
   fobt?: 'Dương tính' | 'Âm tính' | 'Chưa làm'; // Máu ẩn trong phân
   endoscopyScore?: string; // Mayo Endoscopic 0-3 hoặc SES-CD
+  endoscopyLink?: string; // Link kết quả / hình ảnh nội soi tiêu hóa (URL, Google Drive, PACS, video)
+  tbExcluded?: boolean; // Đã loại trừ lao ruột hay chưa (Intestinal Tuberculosis excluded)
+  tbNotes?: string; // Ghi chú kết quả tầm soát lao (X-quang ngực, GeneXpert, IGRA/Quantiferon, mô bệnh học...)
   diseaseActivity?: 'Thuyên giảm (Remission)' | 'Hoạt động nhẹ' | 'Hoạt động vừa' | 'Hoạt động nặng';
   affectedArea?: string; // Hồi tràng, Đại tràng trái, Toàn bộ đại tràng, Trực tràng...
 }
