@@ -1,0 +1,32 @@
+name: Supabase Database Keep-Alive
+
+on:
+  schedule:
+    # Runs every Monday at 02:00 UTC (9:00 AM VN time) to reset Supabase 7-day inactivity pause
+    - cron: '0 2 * * 1'
+  workflow_dispatch: # Allows manual trigger from GitHub UI
+
+jobs:
+  keep-alive:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase Database
+        env:
+          SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL || secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY || secrets.SUPABASE_ANON_KEY }}
+        run: |
+          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_ANON_KEY" ]; then
+            echo "::warning ::Supabase URL or Anon Key secrets are not configured in GitHub repository secrets. Skipping ping."
+            exit 0
+          fi
+          echo "Pinging Supabase at $SUPABASE_URL to prevent 7-day inactivity pause..."
+          ENDPOINT="${SUPABASE_URL%/}/rest/v1/patients?select=id&limit=1"
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X GET "$ENDPOINT" \
+            -H "apikey: $SUPABASE_ANON_KEY" \
+            -H "Authorization: Bearer $SUPABASE_ANON_KEY")
+          echo "Response HTTP Status: $HTTP_STATUS"
+          if [ "$HTTP_STATUS" -ge 200 ] && [ "$HTTP_STATUS" -lt 300 ]; then
+            echo "✅ Supabase ping successful! Inactivity timer reset."
+          else
+            echo "::warning ::Supabase returned HTTP $HTTP_STATUS"
+          fi

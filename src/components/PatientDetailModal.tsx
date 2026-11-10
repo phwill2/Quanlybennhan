@@ -187,6 +187,20 @@ export const PatientDetailModal: React.FC<PatientDetailModalProps> = ({
                   APRI: <strong>{patient.liverLabs?.apriScore ?? '--'}</strong> • FibroScan:{' '}
                   <strong>{patient.liverLabs?.fibroscanKpa ? `${patient.liverLabs.fibroscanKpa} kPa` : '--'}</strong>
                 </div>
+
+                {(patient.liverLabs?.autoimmuneLiverType || patient.liverLabs?.iggLevel || patient.liverLabs?.anaTiter || patient.liverLabs?.asmaTiter || patient.liverLabs?.amaM2) && (
+                  <div className="pt-2 mt-2 border-t border-sky-200/60 flex items-center justify-between flex-wrap gap-1.5 text-[11px]">
+                    <div className="flex items-center gap-1 font-semibold text-indigo-900">
+                      <ShieldAlert className="h-3.5 w-3.5 text-indigo-600" />
+                      <span>{patient.liverLabs.autoimmuneLiverType || 'Bệnh gan tự miễn'}</span>
+                    </div>
+                    {patient.liverLabs.iggLevel && (
+                      <span className="text-slate-600">
+                        IgG: <strong className={patient.liverLabs.iggLevel > 1600 ? 'text-rose-600 font-bold' : 'text-slate-800'}>{patient.liverLabs.iggLevel} mg/dL</strong>
+                      </span>
+                    )}
+                  </div>
+                )}
               </div>
             )}
 
@@ -391,6 +405,153 @@ export const PatientDetailModal: React.FC<PatientDetailModalProps> = ({
                       <td className="py-2 px-3 text-slate-500">&lt; 20 IU/mL (Ngưỡng âm tính)</td>
                       <td className="py-2 px-3">
                         <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-slate-100 text-slate-700">Đã ghi nhận</span>
+                      </td>
+                    </tr>
+                  )}
+                  {patient.liverLabs?.hcvRna && (
+                    <tr>
+                      <td className="py-2 px-3 font-medium text-slate-800">Tải Lượng HCV-RNA</td>
+                      <td className="py-2 px-3 font-bold text-sky-700">{patient.liverLabs.hcvRna}</td>
+                      <td className="py-2 px-3 text-slate-500">Dưới ngưỡng phát hiện</td>
+                      <td className="py-2 px-3">
+                        <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-slate-100 text-slate-700">Đã ghi nhận</span>
+                      </td>
+                    </tr>
+                  )}
+
+                  {/* Autoimmune Liver Tests */}
+                  {patient.liverLabs?.autoimmuneLiverType && (
+                    <tr className="bg-indigo-50/50">
+                      <td className="py-2 px-3 font-medium text-indigo-950">Thể Bệnh Gan Tự Miễn</td>
+                      <td colSpan={3} className="py-2 px-3">
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-indigo-100 text-indigo-800 border border-indigo-200">
+                          <ShieldAlert className="h-3.5 w-3.5 text-indigo-600" />
+                          {patient.liverLabs.autoimmuneLiverType}
+                        </span>
+                      </td>
+                    </tr>
+                  )}
+                  {patient.liverLabs?.aihScore && (
+                    <tr>
+                      <td className="py-2 px-3 font-medium text-slate-800">Điểm AIH Đơn Giản Hóa</td>
+                      <td className="py-2 px-3 font-bold text-indigo-900">{patient.liverLabs.aihScore}</td>
+                      <td className="py-2 px-3 text-slate-500">≥6: Nghi ngờ | ≥7: Xác định AIH</td>
+                      <td className="py-2 px-3">
+                        <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200">
+                          IAIHG Score
+                        </span>
+                      </td>
+                    </tr>
+                  )}
+                  {patient.liverLabs?.anaTiter && (
+                    <tr>
+                      <td className="py-2 px-3 font-medium text-slate-800">Kháng Thể Kháng Nhân (ANA)</td>
+                      <td className="py-2 px-3 font-bold text-slate-800">{patient.liverLabs.anaTiter}</td>
+                      <td className="py-2 px-3 text-slate-500">Âm tính (&lt; 1:40)</td>
+                      <td className="py-2 px-3">
+                        <span className={`px-2 py-0.5 rounded text-[11px] font-semibold ${patient.liverLabs.anaTiter.toLowerCase().includes('âm') ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800 font-bold'}`}>
+                          {patient.liverLabs.anaTiter.toLowerCase().includes('âm') ? 'Âm tính' : 'Dương tính (+)'}
+                        </span>
+                      </td>
+                    </tr>
+                  )}
+                  {patient.liverLabs?.asmaTiter && (
+                    <tr>
+                      <td className="py-2 px-3 font-medium text-slate-800">Kháng Thể Kháng Cơ Trơn (ASMA)</td>
+                      <td className="py-2 px-3 font-bold text-slate-800">{patient.liverLabs.asmaTiter}</td>
+                      <td className="py-2 px-3 text-slate-500">Âm tính (&lt; 1:40)</td>
+                      <td className="py-2 px-3">
+                        <span className={`px-2 py-0.5 rounded text-[11px] font-semibold ${patient.liverLabs.asmaTiter.toLowerCase().includes('âm') ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800 font-bold'}`}>
+                          {patient.liverLabs.asmaTiter.toLowerCase().includes('âm') ? 'Âm tính' : 'Dương tính (+)'}
+                        </span>
+                      </td>
+                    </tr>
+                  )}
+                  {patient.liverLabs?.antiLkm1 && patient.liverLabs.antiLkm1 !== 'Chưa làm' && (
+                    <tr>
+                      <td className="py-2 px-3 font-medium text-slate-800">Anti-LKM-1 (AIH Type 2)</td>
+                      <td className="py-2 px-3 font-bold text-slate-800">{patient.liverLabs.antiLkm1}</td>
+                      <td className="py-2 px-3 text-slate-500">Âm tính</td>
+                      <td className="py-2 px-3">
+                        <span className={`px-2 py-0.5 rounded text-[11px] font-semibold ${patient.liverLabs.antiLkm1 === 'Dương tính' ? 'bg-rose-100 text-rose-800 font-bold' : 'bg-emerald-100 text-emerald-800'}`}>
+                          {patient.liverLabs.antiLkm1}
+                        </span>
+                      </td>
+                    </tr>
+                  )}
+                  {patient.liverLabs?.amaM2 && patient.liverLabs.amaM2 !== 'Chưa làm' && (
+                    <tr>
+                      <td className="py-2 px-3 font-medium text-slate-800">Kháng Thể Kháng Ty Thể (AMA-M2)</td>
+                      <td className="py-2 px-3 font-bold text-slate-800">{patient.liverLabs.amaM2}</td>
+                      <td className="py-2 px-3 text-slate-500">Âm tính (Đặc hiệu PBC)</td>
+                      <td className="py-2 px-3">
+                        <span className={`px-2 py-0.5 rounded text-[11px] font-semibold ${patient.liverLabs.amaM2 === 'Dương tính' ? 'bg-rose-100 text-rose-800 font-bold' : 'bg-emerald-100 text-emerald-800'}`}>
+                          {patient.liverLabs.amaM2}
+                        </span>
+                      </td>
+                    </tr>
+                  )}
+                  {patient.liverLabs?.pAnca && patient.liverLabs.pAnca !== 'Chưa làm' && (
+                    <tr>
+                      <td className="py-2 px-3 font-medium text-slate-800">Kháng Thể p-ANCA</td>
+                      <td className="py-2 px-3 font-bold text-slate-800">{patient.liverLabs.pAnca}</td>
+                      <td className="py-2 px-3 text-slate-500">Âm tính (Gợi ý PSC / AIH)</td>
+                      <td className="py-2 px-3">
+                        <span className={`px-2 py-0.5 rounded text-[11px] font-semibold ${patient.liverLabs.pAnca === 'Dương tính' ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'}`}>
+                          {patient.liverLabs.pAnca}
+                        </span>
+                      </td>
+                    </tr>
+                  )}
+                  {patient.liverLabs?.antiSla && patient.liverLabs.antiSla !== 'Chưa làm' && (
+                    <tr>
+                      <td className="py-2 px-3 font-medium text-slate-800">Anti-SLA/LP</td>
+                      <td className="py-2 px-3 font-bold text-slate-800">{patient.liverLabs.antiSla}</td>
+                      <td className="py-2 px-3 text-slate-500">Âm tính</td>
+                      <td className="py-2 px-3">
+                        <span className={`px-2 py-0.5 rounded text-[11px] font-semibold ${patient.liverLabs.antiSla === 'Dương tính' ? 'bg-rose-100 text-rose-800' : 'bg-emerald-100 text-emerald-800'}`}>
+                          {patient.liverLabs.antiSla}
+                        </span>
+                      </td>
+                    </tr>
+                  )}
+                  {patient.liverLabs?.iggLevel !== undefined && (
+                    <tr>
+                      <td className="py-2 px-3 font-medium text-slate-800">Định Lượng IgG Huyết Thanh</td>
+                      <td className="py-2 px-3 font-bold">{patient.liverLabs.iggLevel} mg/dL</td>
+                      <td className="py-2 px-3 text-slate-500">700 - 1600 mg/dL</td>
+                      <td className="py-2 px-3">
+                        <span className={`px-2 py-0.5 rounded text-[11px] font-semibold ${patient.liverLabs.iggLevel > 1600 ? 'bg-rose-100 text-rose-800 font-bold' : 'bg-emerald-100 text-emerald-800'}`}>
+                          {patient.liverLabs.iggLevel > 1600 ? 'Tăng cao (AIH hoạt tính)' : 'Bình thường'}
+                        </span>
+                      </td>
+                    </tr>
+                  )}
+                  {patient.liverLabs?.igmLevel !== undefined && (
+                    <tr>
+                      <td className="py-2 px-3 font-medium text-slate-800">Định Lượng IgM Huyết Thanh</td>
+                      <td className="py-2 px-3 font-bold">{patient.liverLabs.igmLevel} mg/dL</td>
+                      <td className="py-2 px-3 text-slate-500">40 - 230 mg/dL</td>
+                      <td className="py-2 px-3">
+                        <span className={`px-2 py-0.5 rounded text-[11px] font-semibold ${patient.liverLabs.igmLevel > 230 ? 'bg-amber-100 text-amber-800 font-bold' : 'bg-emerald-100 text-emerald-800'}`}>
+                          {patient.liverLabs.igmLevel > 230 ? 'Tăng cao (Gợi ý PBC)' : 'Bình thường'}
+                        </span>
+                      </td>
+                    </tr>
+                  )}
+                  {patient.liverLabs?.liverBiopsyHistology && (
+                    <tr className="bg-slate-50/70">
+                      <td className="py-2 px-3 font-medium text-slate-800">Sinh Thiết Gan & Mô Bệnh Học</td>
+                      <td colSpan={3} className="py-2 px-3 text-slate-700 italic">
+                        {patient.liverLabs.liverBiopsyHistology}
+                      </td>
+                    </tr>
+                  )}
+                  {patient.liverLabs?.autoimmuneNotes && (
+                    <tr className="bg-indigo-50/30">
+                      <td className="py-2 px-3 font-medium text-slate-800">Ghi Chú Điều Trị Tự Miễn</td>
+                      <td colSpan={3} className="py-2 px-3 text-indigo-900 font-medium">
+                        {patient.liverLabs.autoimmuneNotes}
                       </td>
                     </tr>
                   )}

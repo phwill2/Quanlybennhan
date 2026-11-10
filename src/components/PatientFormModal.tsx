@@ -788,6 +788,239 @@ export const PatientFormModal: React.FC<PatientFormModalProps> = ({
                     />
                   </div>
                 </div>
+
+                {/* AUTOIMMUNE LIVER WORKUP (Khảo sát Bệnh Gan Tự Miễn) */}
+                <div className="p-4 rounded-xl border border-indigo-200 bg-indigo-50/50 space-y-4">
+                  <div className="flex items-center justify-between flex-wrap gap-2">
+                    <div className="flex items-center gap-2">
+                      <div className="h-8 w-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center shadow-xs">
+                        <ShieldAlert className="h-4.5 w-4.5" />
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-bold text-indigo-950">
+                          Yếu Tố Bệnh Gan Tự Miễn (Autoimmune Liver Disease Workup)
+                        </h4>
+                        <p className="text-xs text-indigo-700">
+                          Kháng thể tự miễn, Định lượng IgG/IgM, Thang điểm AIH & Sinh thiết gan (AIH / PBC / PSC / Overlap)
+                        </p>
+                      </div>
+                    </div>
+                    <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-indigo-100 text-indigo-800 border border-indigo-200">
+                      Chuyên khoa Gan Mật
+                    </span>
+                  </div>
+
+                  {/* Row 1: Thể tự miễn & Điểm chẩn đoán */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1">
+                        Phân Loại / Thể Bệnh Gan Tự Miễn
+                      </label>
+                      <select
+                        value={liverLabs.autoimmuneLiverType || ''}
+                        onChange={(e) => setLiverLabs({ ...liverLabs, autoimmuneLiverType: (e.target.value as any) || undefined })}
+                        className="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 bg-white"
+                      >
+                        <option value="">-- Chưa xác định / Không nghi ngờ --</option>
+                        <option value="AIH Type 1">AIH Type 1 (Viêm gan tự miễn Type 1 - ANA / ASMA (+))</option>
+                        <option value="AIH Type 2">AIH Type 2 (Viêm gan tự miễn Type 2 - Anti-LKM-1 (+))</option>
+                        <option value="PBC (Viêm đường mật tiên phát)">PBC (Viêm đường mật tiên phát - AMA-M2 (+))</option>
+                        <option value="PSC (Xơ hóa đường mật)">PSC (Xơ hóa đường mật nguyên phát)</option>
+                        <option value="Hội chứng chồng lấp (Overlap)">Hội chứng chồng lấp (Overlap AIH-PBC / AIH-PSC)</option>
+                        <option value="Nghi ngờ / Theo dõi">Nghi ngờ bệnh gan tự miễn / Đang theo dõi</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1">
+                        Thang Điểm AIH Đơn Giản Hóa (Simplified AIH Score)
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="VD: 7 điểm (Xác định AIH) hoặc 6 điểm (Nghi ngờ)"
+                        value={liverLabs.aihScore || ''}
+                        onChange={(e) => setLiverLabs({ ...liverLabs, aihScore: e.target.value })}
+                        className="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 bg-white"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Row 2: Kháng thể tự miễn chính */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-1">
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1">
+                        Kháng Thể Kháng Nhân (ANA Titer)
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="VD: Âm tính, 1:80, 1:160, 1:320..."
+                        value={liverLabs.anaTiter || ''}
+                        onChange={(e) => setLiverLabs({ ...liverLabs, anaTiter: e.target.value })}
+                        className="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 bg-white"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1">
+                        Kháng Cơ Trơn (ASMA / SMA Titer)
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="VD: Âm tính, 1:40, 1:80, 1:160..."
+                        value={liverLabs.asmaTiter || ''}
+                        onChange={(e) => setLiverLabs({ ...liverLabs, asmaTiter: e.target.value })}
+                        className="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 bg-white"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1">
+                        Anti-LKM-1 (AIH Type 2)
+                      </label>
+                      <select
+                        value={liverLabs.antiLkm1 || 'Chưa làm'}
+                        onChange={(e) => setLiverLabs({ ...liverLabs, antiLkm1: e.target.value as any })}
+                        className="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 bg-white"
+                      >
+                        <option value="Chưa làm">Chưa làm</option>
+                        <option value="Âm tính">Âm tính</option>
+                        <option value="Dương tính">Dương tính (+)</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Row 3: AMA-M2, p-ANCA, Anti-SLA */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1">
+                        AMA / AMA-M2 (Đặc hiệu PBC)
+                      </label>
+                      <select
+                        value={liverLabs.amaM2 || 'Chưa làm'}
+                        onChange={(e) => setLiverLabs({ ...liverLabs, amaM2: e.target.value as any })}
+                        className="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 bg-white"
+                      >
+                        <option value="Chưa làm">Chưa làm</option>
+                        <option value="Âm tính">Âm tính</option>
+                        <option value="Dương tính">Dương tính (+) - Gợi ý PBC</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1">
+                        Kháng Thể p-ANCA (PSC / AIH)
+                      </label>
+                      <select
+                        value={liverLabs.pAnca || 'Chưa làm'}
+                        onChange={(e) => setLiverLabs({ ...liverLabs, pAnca: e.target.value as any })}
+                        className="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 bg-white"
+                      >
+                        <option value="Chưa làm">Chưa làm</option>
+                        <option value="Âm tính">Âm tính</option>
+                        <option value="Dương tính">Dương tính (+)</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1">
+                        Anti-SLA/LP
+                      </label>
+                      <select
+                        value={liverLabs.antiSla || 'Chưa làm'}
+                        onChange={(e) => setLiverLabs({ ...liverLabs, antiSla: e.target.value as any })}
+                        className="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 bg-white"
+                      >
+                        <option value="Chưa làm">Chưa làm</option>
+                        <option value="Âm tính">Âm tính</option>
+                        <option value="Dương tính">Dương tính (+)</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Row 4: IgG & IgM Quantitative */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <div className="flex items-center justify-between mb-1">
+                        <label className="text-xs font-semibold text-slate-700">
+                          Định Lượng IgG Huyết Thanh (mg/dL)
+                        </label>
+                        <span className="text-[11px] text-slate-500">Chuẩn: 700 - 1600 mg/dL</span>
+                      </div>
+                      <input
+                        type="number"
+                        step="1"
+                        placeholder="VD: 1850 (Tăng cao gợi ý AIH)"
+                        value={liverLabs.iggLevel ?? ''}
+                        onChange={(e) => setLiverLabs({ ...liverLabs, iggLevel: e.target.value === '' ? undefined : parseFloat(e.target.value) })}
+                        className="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 bg-white"
+                      />
+                      {liverLabs.iggLevel !== undefined && (
+                        <p className="text-[11px] mt-1 font-medium">
+                          {liverLabs.iggLevel > 1600 ? (
+                            <span className="text-rose-600 font-bold">⚠️ IgG tăng cao ({liverLabs.iggLevel} mg/dL) - Tương ứng tiêu chuẩn AIH</span>
+                          ) : (
+                            <span className="text-emerald-700 font-semibold">✓ Trong giới hạn bình thường</span>
+                          )}
+                        </p>
+                      )}
+                    </div>
+
+                    <div>
+                      <div className="flex items-center justify-between mb-1">
+                        <label className="text-xs font-semibold text-slate-700">
+                          Định Lượng IgM Huyết Thanh (mg/dL)
+                        </label>
+                        <span className="text-[11px] text-slate-500">Chuẩn: 40 - 230 mg/dL</span>
+                      </div>
+                      <input
+                        type="number"
+                        step="1"
+                        placeholder="VD: 340 (Tăng gợi ý PBC)"
+                        value={liverLabs.igmLevel ?? ''}
+                        onChange={(e) => setLiverLabs({ ...liverLabs, igmLevel: e.target.value === '' ? undefined : parseFloat(e.target.value) })}
+                        className="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 bg-white"
+                      />
+                      {liverLabs.igmLevel !== undefined && (
+                        <p className="text-[11px] mt-1 font-medium">
+                          {liverLabs.igmLevel > 230 ? (
+                            <span className="text-amber-700 font-bold">⚠️ IgM tăng cao ({liverLabs.igmLevel} mg/dL) - Thường gặp trong PBC</span>
+                          ) : (
+                            <span className="text-emerald-700 font-semibold">✓ Trong giới hạn bình thường</span>
+                          )}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Row 5: Sinh thiết gan & Ghi chú phác đồ */}
+                  <div className="space-y-3 pt-1">
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1">
+                        Kết Quả Sinh Thiết Gan & Mô Bệnh Học (Liver Biopsy Histology)
+                      </label>
+                      <textarea
+                        rows={2}
+                        placeholder="VD: Viêm bề mặt tiếp xúc (Interface hepatitis), thâm nhiễm tương bào (plasma cells) quanh khoảng cửa, hoại tử cầu nối..."
+                        value={liverLabs.liverBiopsyHistology || ''}
+                        onChange={(e) => setLiverLabs({ ...liverLabs, liverBiopsyHistology: e.target.value })}
+                        className="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 bg-white"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1">
+                        Ghi Chú Phác Đồ Ức Chế Miễn Dịch & Theo Dõi Tự Miễn
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="VD: Prednisolone 30mg/ngày + Azathioprine 50mg/ngày, kiểm tra lại IgG & men gan sau 4 tuần"
+                        value={liverLabs.autoimmuneNotes || ''}
+                        onChange={(e) => setLiverLabs({ ...liverLabs, autoimmuneNotes: e.target.value })}
+                        className="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 bg-white"
+                      />
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           )}

@@ -84,6 +84,9 @@ export const AddVisitModal: React.FC<AddVisitModalProps> = ({
   const [hbvDna, setHbvDna] = useState<string>(initialVisit?.liverLabs?.hbvDna || patient.liverLabs?.hbvDna || '');
   const [hcvRna, setHcvRna] = useState<string>(initialVisit?.liverLabs?.hcvRna || patient.liverLabs?.hcvRna || '');
   const [fibroscanKpa, setFibroscanKpa] = useState<number | undefined>(initialVisit?.liverLabs?.fibroscanKpa ?? patient.liverLabs?.fibroscanKpa);
+  const [iggLevel, setIggLevel] = useState<number | undefined>(initialVisit?.liverLabs?.iggLevel ?? patient.liverLabs?.iggLevel);
+  const [autoimmuneNotes, setAutoimmuneNotes] = useState<string>(initialVisit?.liverLabs?.autoimmuneNotes || patient.liverLabs?.autoimmuneNotes || '');
+  const [autoimmuneLiverType, setAutoimmuneLiverType] = useState<any>(initialVisit?.liverLabs?.autoimmuneLiverType || patient.liverLabs?.autoimmuneLiverType || '');
 
   // IBD labs
   const [fecalCalprotectin, setFecalCalprotectin] = useState<number | undefined>(initialVisit?.ibdLabs?.fecalCalprotectin ?? patient.ibdLabs?.fecalCalprotectin);
@@ -155,6 +158,17 @@ export const AddVisitModal: React.FC<AddVisitModalProps> = ({
         fib4Score: fib4Result.score,
         fib4Category: fib4Result.category,
         apriScore: apriResult.score,
+        iggLevel,
+        autoimmuneNotes: autoimmuneNotes.trim() || undefined,
+        autoimmuneLiverType: autoimmuneLiverType || undefined,
+        anaTiter: initialVisit?.liverLabs?.anaTiter || patient.liverLabs?.anaTiter,
+        asmaTiter: initialVisit?.liverLabs?.asmaTiter || patient.liverLabs?.asmaTiter,
+        antiLkm1: initialVisit?.liverLabs?.antiLkm1 || patient.liverLabs?.antiLkm1,
+        amaM2: initialVisit?.liverLabs?.amaM2 || patient.liverLabs?.amaM2,
+        pAnca: initialVisit?.liverLabs?.pAnca || patient.liverLabs?.pAnca,
+        antiSla: initialVisit?.liverLabs?.antiSla || patient.liverLabs?.antiSla,
+        aihScore: initialVisit?.liverLabs?.aihScore || patient.liverLabs?.aihScore,
+        liverBiopsyHistology: initialVisit?.liverLabs?.liverBiopsyHistology || patient.liverLabs?.liverBiopsyHistology,
       };
     }
 
@@ -389,6 +403,47 @@ export const AddVisitModal: React.FC<AddVisitModalProps> = ({
                     placeholder="VD: <20 IU/mL hoặc 1.2x10^3"
                     value={hbvDna}
                     onChange={(e) => setHbvDna(e.target.value)}
+                    className="w-full px-2.5 py-1.5 bg-white border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-amber-500 focus:outline-hidden"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-medium text-slate-700 mb-1">IgG huyết thanh (mg/dL)</label>
+                  <input
+                    type="number"
+                    placeholder="700-1600"
+                    value={iggLevel ?? ''}
+                    onChange={(e) => setIggLevel(e.target.value ? Number(e.target.value) : undefined)}
+                    className="w-full px-2.5 py-1.5 bg-white border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-amber-500 focus:outline-hidden"
+                  />
+                </div>
+              </div>
+
+              {/* Autoimmune Liver Specific Note */}
+              <div className="pt-2 border-t border-amber-200/60 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[11px] font-medium text-slate-700 mb-1">Thể bệnh gan tự miễn</label>
+                  <select
+                    value={autoimmuneLiverType || ''}
+                    onChange={(e) => setAutoimmuneLiverType(e.target.value || undefined)}
+                    className="w-full px-2.5 py-1.5 bg-white border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-amber-500 focus:outline-hidden"
+                  >
+                    <option value="">-- Không có / Chưa xác định --</option>
+                    <option value="AIH Type 1">AIH Type 1</option>
+                    <option value="AIH Type 2">AIH Type 2</option>
+                    <option value="PBC (Viêm đường mật tiên phát)">PBC</option>
+                    <option value="PSC (Xơ hóa đường mật)">PSC</option>
+                    <option value="Hội chứng chồng lấp (Overlap)">Hội chứng chồng lấp (Overlap)</option>
+                    <option value="Nghi ngờ / Theo dõi">Nghi ngờ / Theo dõi</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-[11px] font-medium text-slate-700 mb-1">Ghi chú theo dõi tự miễn / Ức chế miễn dịch</label>
+                  <input
+                    type="text"
+                    placeholder="VD: Liều Prednisolone hiện tại 15mg/ngày, IgG giảm tốt"
+                    value={autoimmuneNotes}
+                    onChange={(e) => setAutoimmuneNotes(e.target.value)}
                     className="w-full px-2.5 py-1.5 bg-white border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-amber-500 focus:outline-hidden"
                   />
                 </div>

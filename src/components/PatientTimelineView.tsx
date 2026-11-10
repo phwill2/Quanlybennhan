@@ -646,7 +646,32 @@ export const PatientTimelineView: React.FC<PatientTimelineViewProps> = ({
                                   <span className="font-bold text-amber-900 font-mono text-[11px]">{visit.liverLabs.hbvDna}</span>
                                 </div>
                               )}
+                              {visit.liverLabs.iggLevel !== undefined && (
+                                <div className="bg-white p-2 rounded-xl border border-indigo-100">
+                                  <span className="text-indigo-500 text-[10px] block font-semibold">IgG huyết thanh</span>
+                                  <span className={`font-bold ${visit.liverLabs.iggLevel > 1600 ? 'text-rose-600' : 'text-indigo-900'}`}>
+                                    {visit.liverLabs.iggLevel} mg/dL
+                                  </span>
+                                </div>
+                              )}
                             </div>
+
+                            {/* Autoimmune Liver Tag in Visit Card */}
+                            {(visit.liverLabs.autoimmuneLiverType || visit.liverLabs.autoimmuneNotes) && (
+                              <div className="mt-2 pt-2 border-t border-amber-100 flex items-center justify-between flex-wrap gap-2 text-xs">
+                                {visit.liverLabs.autoimmuneLiverType && (
+                                  <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-md bg-indigo-100 text-indigo-800 border border-indigo-200">
+                                    <ShieldAlert className="h-3 w-3 text-indigo-600" />
+                                    {visit.liverLabs.autoimmuneLiverType}
+                                  </span>
+                                )}
+                                {visit.liverLabs.autoimmuneNotes && (
+                                  <span className="text-[11px] text-slate-600 italic">
+                                    {visit.liverLabs.autoimmuneNotes}
+                                  </span>
+                                )}
+                              </div>
+                            )}
                           </div>
                         )}
 
@@ -1009,6 +1034,35 @@ export const PatientTimelineView: React.FC<PatientTimelineViewProps> = ({
                           {chronologicalHistory.map((item) => (
                             <td key={item.id} className="py-2.5 px-4 font-bold">
                               {item.liverLabs?.fib4Score ? `${item.liverLabs.fib4Score} (${item.liverLabs.fib4Category || ''})` : '-'}
+                            </td>
+                          ))}
+                        </tr>
+                        <tr>
+                          <td className="py-2.5 px-4 font-semibold text-slate-900">IgG Huyết Thanh (mg/dL)</td>
+                          {chronologicalHistory.map((item) => (
+                            <td key={item.id} className="py-2.5 px-4 font-bold">
+                              {item.liverLabs?.iggLevel !== undefined ? (
+                                <span className={item.liverLabs.iggLevel > 1600 ? 'text-rose-600' : 'text-slate-800'}>
+                                  {item.liverLabs.iggLevel} mg/dL
+                                </span>
+                              ) : '-'}
+                            </td>
+                          ))}
+                        </tr>
+                        <tr>
+                          <td className="py-2.5 px-4 font-semibold text-slate-900">Yếu tố gan tự miễn</td>
+                          {chronologicalHistory.map((item) => (
+                            <td key={item.id} className="py-2.5 px-4">
+                              {item.liverLabs?.autoimmuneLiverType ? (
+                                <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-800">
+                                  <ShieldAlert className="h-3 w-3 text-indigo-600" />
+                                  {item.liverLabs.autoimmuneLiverType}
+                                </span>
+                              ) : item.liverLabs?.anaTiter || item.liverLabs?.asmaTiter ? (
+                                <span className="text-[11px] text-slate-700">
+                                  {item.liverLabs.anaTiter ? `ANA ${item.liverLabs.anaTiter}` : ''} {item.liverLabs.asmaTiter ? `ASMA ${item.liverLabs.asmaTiter}` : ''}
+                                </span>
+                              ) : '-'}
                             </td>
                           ))}
                         </tr>

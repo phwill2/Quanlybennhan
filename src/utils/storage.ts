@@ -57,6 +57,11 @@ export function exportPatientsToCSV(patients: PatientRecord[]): void {
     'FibroScan kPa',
     'FIB-4 Score',
     'FIB-4 Phân loại',
+    'Thể Gan Tự Miễn',
+    'IgG Huyết Thanh (mg/dL)',
+    'ANA Titer',
+    'ASMA Titer',
+    'AMA-M2',
     // Xét nghiệm IBD
     'Calprotectin Phân (µg/g)',
     'CRP (mg/L)',
@@ -115,6 +120,11 @@ export function exportPatientsToCSV(patients: PatientRecord[]): void {
       escapeCSV(p.liverLabs?.fibroscanKpa),
       escapeCSV(p.liverLabs?.fib4Score),
       escapeCSV(p.liverLabs?.fib4Category),
+      escapeCSV(p.liverLabs?.autoimmuneLiverType || ''),
+      escapeCSV(p.liverLabs?.iggLevel),
+      escapeCSV(p.liverLabs?.anaTiter || ''),
+      escapeCSV(p.liverLabs?.asmaTiter || ''),
+      escapeCSV(p.liverLabs?.amaM2 || ''),
       // IBD
       escapeCSV(p.ibdLabs?.fecalCalprotectin),
       escapeCSV(p.ibdLabs?.crp),

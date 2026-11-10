@@ -260,3 +260,156 @@ export async function deletePatientFromSupabase(patientId: string): Promise<{ su
     return { success: false, error: err as Error };
   }
 }
+
+/**
+ * KEEP-ALIVE INTERFACES & UTILITIES
+ * Supabase free tier pauses projects after 7 days of inactivity.
+ * Pinging the database resets this inactivity timer.
+ */
+export interface SupabaseKeepAliveStatus {
+  lastPingTime: string | null;
+  lastPingLatency: number | null;
+  lastPingStatus: 'success' | 'error' | 'none';
+  daysElapsed: number;
+  daysRemaining: number;
+  isSafe: boolean;
+  needsPing: boolean;
+  message: string;
+}
+
+/**
+ * Get current keep-alive and ping status from localStorage
+ */
+export const getSupabaseKeepAliveStatus = (): SupabaseKeepAliveStatus => {
+  if (typeof window === 'undefined') {
+    return {
+      lastPingTime: null,
+      lastPingLatency: null,
+      lastPingStatus: 'none',
+      daysElapsed: 0,
+      daysRemaining: 7,
+      isSafe: true,
+      needsPing: false,
+      message: 'Chưa có thông tin ping'
+    };
+  }
+
+  const rawTime = localStorage.getItem('supabase_keepalive_last_ping');
+  const rawLatency = localStorage.getItem('supabase_keepalive_latency');
+  const rawStatus = (localStorage.getItem('supabase_keepalive_status') as 'success' | 'error') || 'none';
+
+  if (!rawTime) {
+    return {
+      lastPingTime: null,
+      lastPingLatency: null,
+      lastPingStatus: 'none',
+      daysElapsed: 7,
+      daysRemaining: 0,
+      isSafe: false,
+      needsPing: true,
+      message: 'Chưa từng ping hoặc chưa ghi nhận lần ping nào'
+    };
+  }
+
+  const pingDate = new Date(rawTime);
+  const now = new Date();
+  const diffMs = now.getTime() - pingDate.getTime();
+  const daysElapsed = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  const daysRemaining = Math.max(0, 7 - daysElapsed);
+  const isSafe = daysElapsed < 5;
+  const needsPing = daysElapsed >= 3;
+
+  return {
+    lastPingTime: rawTime,
+    lastPingLatency: rawLatency ? Number(rawLatency) : null,
+    lastPingStatus: rawStatus,
+    daysElapsed,
+    daysRemaining,
+    isSafe,
+    needsPing,
+    message: isSafe 
+      ? `Đã ping cách đây ${daysElapsed === 0 ? 'hôm nay' : `${daysElapsed} ngày`}. Còn ${daysRemaining} ngày an toàn trước hạn pause.`
+      : `Đã ${daysElapsed} ngày chưa ping. Hãy ping ngay để tránh bị Supabase tạm dừng!`
+  };
+};
+
+/**
+ * Perform a lightweight query to Supabase PostgreSQL to reset the 7-day inactivity pause counter
+ */
+export async function pingSupabaseKeepAlive(): Promise<{
+  success: boolean;
+  latencyMs?: number;
+  message: string;
+  timestamp: string;
+}> {
+  const timestamp = new Date().toISOString();
+  if (!isSupabaseConfigured()) {
+    return {
+      success: false,
+      message: 'Chưa cấu hình Supabase URL hoặc Anon Key hợp lệ',
+      timestamp
+    };
+  }
+
+  const start = performance.now();
+  try {
+    // Lightweight SELECT query on patients table to register activity in Supabase
+    const { error } = await supabase
+      .from('patients')
+      .select('id')
+      .limit(1);
+
+    const latencyMs = Math.round(performance.now() - start);
+
+    if (error) {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('supabase_keepalive_status', 'error');
+        localStorage.setItem('supabase_keepalive_last_ping', timestamp);
+      }
+      return {
+        success: false,
+        latencyMs,
+        message: `Lỗi kết nối khi ping: ${error.message}`,
+        timestamp
+      };
+    }
+
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('supabase_keepalive_status', 'success');
+      localStorage.setItem('supabase_keepalive_last_ping', timestamp);
+      localStorage.setItem('supabase_keepalive_latency', String(latencyMs));
+    }
+
+    return {
+      success: true,
+      latencyMs,
+      message: `Ping thành công (${latencyMs}ms)! Đã làm mới chu kỳ 7 ngày cho Supabase.`,
+      timestamp
+    };
+  } catch (err: unknown) {
+    const latencyMs = Math.round(performance.now() - start);
+    const errorMsg = err instanceof Error ? err.message : 'Không thể kết nối máy chủ';
+    return {
+      success: false,
+      latencyMs,
+      message: `Lỗi mạng khi ping: ${errorMsg}`,
+      timestamp
+    };
+  }
+}
+
+/**
+ * Get direct REST Keep-Alive URL and headers for external Cron services (like Cron-Job.org)
+ */
+export function getExternalCronConfig(): { url: string; apikey: string; curlCommand: string } {
+  const url = import.meta.env.VITE_SUPABASE_URL || '';
+  const apikey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+  const endpoint = url ? `${url.replace(/\/$/, '')}/rest/v1/patients?select=id&limit=1` : '';
+  const curlCommand = `curl -X GET "${endpoint}" -H "apikey: ${apikey}" -H "Authorization: Bearer ${apikey}"`;
+
+  return {
+    url: endpoint,
+    apikey,
+    curlCommand
+  };
+}

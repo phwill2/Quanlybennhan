@@ -12,7 +12,9 @@ export type LiverDiagnosis =
   | 'Viêm gan nhiễm mỡ (MASH/NASH)'
   | 'Ung thư biểu mô tế bào gan (HCC)'
   | 'Viêm gan tự miễn (AIH)'
+  | 'Viêm đường mật tiên phát (PBC)'
   | 'Viêm đường mật xơ hóa nguyên phát (PSC)'
+  | 'Hội chứng chồng lấp tự miễn (Overlap Syndrome)'
   | 'Khác';
 
 export type IBDDiagnosis =
@@ -75,6 +77,20 @@ export interface LiverLabData {
   fib4Score?: number;
   fib4Category?: 'Thấp (F0-F1)' | 'Trung gian (F2)' | 'Cao (F3-F4)';
   apriScore?: number;
+
+  // Yếu tố bệnh gan tự miễn (Autoimmune Liver Disease - AIH, PBC, PSC, Overlap):
+  anaTiter?: string; // Kháng thể kháng nhân ANA (VD: Âm tính, 1:40, 1:80, 1:160, >=1:320...)
+  asmaTiter?: string; // Kháng thể kháng cơ trơn ASMA / SMA (VD: Âm tính, 1:40, 1:80, >=1:160...)
+  antiLkm1?: 'Âm tính' | 'Dương tính' | 'Chưa làm'; // Kháng thể Anti-LKM-1 (đặc hiệu AIH Type 2)
+  amaM2?: 'Âm tính' | 'Dương tính' | 'Chưa làm'; // Kháng thể kháng ty thể AMA-M2 (đặc hiệu PBC)
+  pAnca?: 'Âm tính' | 'Dương tính' | 'Chưa làm'; // Kháng thể p-ANCA (trong PSC / AIH)
+  antiSla?: 'Âm tính' | 'Dương tính' | 'Chưa làm'; // Kháng thể Anti-SLA/LP
+  iggLevel?: number; // Định lượng IgG huyết thanh (mg/dL) - Bình thường ~700-1600 mg/dL (tiêu chuẩn vàng AIH)
+  igmLevel?: number; // Định lượng IgM huyết thanh (mg/dL) - Bình thường ~40-230 mg/dL (tăng cao trong PBC)
+  aihScore?: string; // Thang điểm chẩn đoán AIH đơn giản hóa (Simplified Score >=6 khả năng, >=7 xác định)
+  autoimmuneLiverType?: 'AIH Type 1' | 'AIH Type 2' | 'PBC (Viêm đường mật tiên phát)' | 'PSC (Xơ hóa đường mật)' | 'Hội chứng chồng lấp (Overlap)' | 'Nghi ngờ / Theo dõi';
+  liverBiopsyHistology?: string; // Mô bệnh học gan (Viêm bề mặt tiếp xúc - Interface hepatitis, xâm nhập tương bào, hoại tử mối gặm...)
+  autoimmuneNotes?: string; // Ghi chú điều trị / đáp ứng thuốc ức chế miễn dịch (Prednisolone, Azathioprine, Budesonide, UDCA...)
 }
 
 export interface IBDLabData {

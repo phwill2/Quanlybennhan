@@ -11,7 +11,10 @@ import {
   fetchPatientsFromSupabase, 
   insertPatientToSupabase, 
   updatePatientInSupabase, 
-  deletePatientFromSupabase 
+  deletePatientFromSupabase,
+  getSupabaseKeepAliveStatus,
+  pingSupabaseKeepAlive,
+  SupabaseKeepAliveStatus
 } from './lib/supabase';
 import { Navbar } from './components/Navbar';
 import { StatsDashboard } from './components/StatsDashboard';
@@ -38,7 +41,8 @@ import {
   AlertTriangle,
   RefreshCw,
   CloudUpload,
-  Sparkles
+  Sparkles,
+  HeartPulse
 } from 'lucide-react';
 
 export default function App() {
@@ -48,6 +52,33 @@ export default function App() {
   const [supabaseNeedsSync, setSupabaseNeedsSync] = useState<boolean>(false);
   const [supabaseError, setSupabaseError] = useState<string | null>(null);
   const [isSupabaseModalOpen, setIsSupabaseModalOpen] = useState(false);
+  const [supabaseModalTab, setSupabaseModalTab] = useState<'config' | 'keepalive'>('config');
+  const [keepAliveStatus, setKeepAliveStatus] = useState<SupabaseKeepAliveStatus>(getSupabaseKeepAliveStatus());
+
+  // Auto Keep-Alive: Ping Supabase if it's been >= 3 days since last ping (or never pinged)
+  // Supabase free tier pauses after 7 days of inactivity.
+  useEffect(() => {
+    if (!isSupabaseConfigured()) return;
+
+    const checkAndPing = async () => {
+      const current = getSupabaseKeepAliveStatus();
+      setKeepAliveStatus(current);
+      if (current.needsPing || !current.lastPingTime) {
+        console.log('[Supabase Keep-Alive] Gửi ping tự động làm mới hạn 7 ngày...');
+        const res = await pingSupabaseKeepAlive();
+        if (res.success) {
+          setKeepAliveStatus(getSupabaseKeepAliveStatus());
+          console.log('[Supabase Keep-Alive]', res.message);
+        }
+      }
+    };
+
+    checkAndPing();
+
+    // Check periodically every 12 hours while web is open
+    const interval = setInterval(checkAndPing, 12 * 60 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   const [currentTab, setCurrentTab] = useState<'dashboard' | 'patients' | 'timeline' | 'calculators'>('dashboard');
   const [categoryFilter, setCategoryFilter] = useState<'all' | DiseaseCategory>('all');
@@ -402,15 +433,24 @@ export default function App() {
 
         {/* Supabase Status Pill */}
         <button
-          onClick={() => setIsSupabaseModalOpen(true)}
+          onClick={() => {
+            setSupabaseModalTab('keepalive');
+            setIsSupabaseModalOpen(true);
+          }}
           className={`w-full mb-6 p-3 rounded-2xl border text-left transition flex items-center justify-between group ${
             isConnected
-              ? 'bg-emerald-50/70 border-emerald-200/80 hover:bg-emerald-100/70'
+              ? keepAliveStatus.needsPing
+                ? 'bg-amber-50/80 border-amber-300 hover:bg-amber-100/80'
+                : 'bg-emerald-50/70 border-emerald-200/80 hover:bg-emerald-100/70'
               : 'bg-amber-50/70 border-amber-200/80 hover:bg-amber-100/70'
           }`}
         >
           <div className="flex items-center gap-2.5 min-w-0">
-            <div className={`p-1.5 rounded-lg ${isConnected ? 'bg-emerald-600 text-white' : 'bg-amber-600 text-white'}`}>
+            <div className={`p-1.5 rounded-lg ${
+              isConnected 
+                ? keepAliveStatus.needsPing ? 'bg-amber-600 text-white' : 'bg-emerald-600 text-white' 
+                : 'bg-amber-600 text-white'
+            }`}>
               <Database className="w-3.5 h-3.5" />
             </div>
             <div className="min-w-0">
@@ -421,6 +461,15 @@ export default function App() {
               <p className={`text-xs font-bold truncate ${isConnected ? 'text-emerald-900' : 'text-amber-900'}`}>
                 {isConnected ? 'Supabase PostgreSQL' : 'Cần cấu hình Supabase'}
               </p>
+              {isConnected && (
+                <p className="text-[10px] text-slate-500 truncate flex items-center gap-1 mt-0.5">
+                  <HeartPulse className="h-2.5 w-2.5 text-rose-500 shrink-0" />
+                  <span>{keepAliveStatus.daysElapsed === 0 ? 'Ping: Hôm nay' : `Ping: ${keepAliveStatus.daysElapsed} ngày trước`}</span>
+                  <span className={`text-[9px] font-bold px-1 rounded ${keepAliveStatus.isSafe ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}`}>
+                    {keepAliveStatus.isSafe ? `Còn ${keepAliveStatus.daysRemaining}d` : 'Cần ping'}
+                  </span>
+                </p>
+              )}
             </div>
           </div>
           <span className="text-[10px] font-semibold text-indigo-600 group-hover:underline">Chi tiết</span>
@@ -542,6 +591,11 @@ export default function App() {
             setIsFormModalOpen(true);
           }}
           onOpenImportExport={() => setIsImportExportModalOpen(true)}
+          onOpenSupabaseModal={() => {
+            setSupabaseModalTab('keepalive');
+            setIsSupabaseModalOpen(true);
+          }}
+          isSupabaseConnected={isConnected}
         />
 
         {/* Main Content Area */}
@@ -797,9 +851,16 @@ export default function App() {
       {/* Supabase Connection & SQL Configuration Modal */}
       <SupabaseConfigModal
         isOpen={isSupabaseModalOpen}
-        onClose={() => setIsSupabaseModalOpen(false)}
-        onRefreshConnection={loadPatientsFromSupabase}
+        onClose={() => {
+          setIsSupabaseModalOpen(false);
+          setKeepAliveStatus(getSupabaseKeepAliveStatus());
+        }}
+        onRefreshConnection={async () => {
+          await loadPatientsFromSupabase();
+          setKeepAliveStatus(getSupabaseKeepAliveStatus());
+        }}
         patientCount={patients.length}
+        initialTab={supabaseModalTab}
       />
     </div>
   );

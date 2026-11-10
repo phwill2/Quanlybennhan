@@ -8,7 +8,8 @@ import {
   Download, 
   FileSpreadsheet,
   Stethoscope,
-  TrendingUp
+  TrendingUp,
+  Database
 } from 'lucide-react';
 
 interface NavbarProps {
@@ -17,6 +18,8 @@ interface NavbarProps {
   totalPatients: number;
   onOpenNewPatient: () => void;
   onOpenImportExport: () => void;
+  onOpenSupabaseModal?: () => void;
+  isSupabaseConnected?: boolean;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -25,6 +28,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   totalPatients,
   onOpenNewPatient,
   onOpenImportExport,
+  onOpenSupabaseModal,
+  isSupabaseConnected,
 }) => {
   return (
     <header className="lg:hidden bg-white text-slate-900 sticky top-0 z-30 shadow-xs border-b border-slate-200">
@@ -107,6 +112,21 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           {/* Quick Action Buttons */}
           <div className="flex items-center space-x-1.5">
+            {onOpenSupabaseModal && (
+              <button
+                id="btn-supabase-modal-mobile"
+                onClick={onOpenSupabaseModal}
+                title="Quản lý Supabase & Keep-Alive"
+                className={`p-2 rounded-xl border transition ${
+                  isSupabaseConnected 
+                    ? 'text-emerald-700 bg-emerald-50 border-emerald-200 hover:bg-emerald-100' 
+                    : 'text-amber-700 bg-amber-50 border-amber-200 hover:bg-amber-100'
+                }`}
+              >
+                <Database className="h-4 w-4" />
+              </button>
+            )}
+
             <button
               id="btn-import-export"
               onClick={onOpenImportExport}

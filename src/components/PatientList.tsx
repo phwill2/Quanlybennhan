@@ -139,6 +139,15 @@ export const PatientList: React.FC<PatientListProps> = ({
     if (patient.primaryCategory === 'liver' || patient.liverLabs) {
       const fib4 = patient.liverLabs?.fib4Score;
       const alt = patient.liverLabs?.alt;
+      const autoType = patient.liverLabs?.autoimmuneLiverType;
+      const igg = patient.liverLabs?.iggLevel;
+      if (autoType || (patient.specificDiagnosis && patient.specificDiagnosis.includes('tự miễn'))) {
+        return (
+          <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded font-semibold bg-indigo-100 text-indigo-800 border border-indigo-200">
+            {autoType || 'Gan tự miễn AIH'} {igg ? `• IgG ${igg}` : ''}
+          </span>
+        );
+      }
       if (fib4) {
         return (
           <span className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded font-medium ${
