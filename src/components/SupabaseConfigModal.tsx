@@ -555,7 +555,7 @@ VITE_SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."`;
                 <CheckCircle2 className="h-4 w-4 text-indigo-600 mt-0.5 shrink-0" />
                 <div>
                   <strong className="block text-indigo-900">Cách 2: Đã tạo sẵn file GitHub Actions tự động:</strong>
-                  File kịch bản <code className="bg-indigo-100 text-indigo-800 px-1 py-0.5 rounded font-mono">.github/workflows/supabase-keepalive.yml</code> đã được cấu hình sẵn trong mã nguồn. Nếu bạn đưa code lên GitHub repo, GitHub sẽ tự động chạy lệnh ping mỗi sáng thứ Hai lúc 09:00 AM (giờ Việt Nam).
+                  File kịch bản <code className="bg-indigo-100 text-indigo-800 px-1 py-0.5 rounded font-mono">.github/workflows/supabase-keepalive.yml</code> đã được cấu hình sẵn trong mã nguồn. Nếu bạn đưa code lên GitHub repo, GitHub sẽ tự động chạy lệnh ping 2 lần/tuần (vào sáng thứ Hai và thứ Năm lúc 09:00 AM giờ Việt Nam).
                 </div>
               </div>
             </div>

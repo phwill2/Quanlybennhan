@@ -2,9 +2,10 @@ name: Supabase Database Keep-Alive
 
 on:
   schedule:
-    # Runs every Monday at 02:00 UTC (9:00 AM VN time) to reset Supabase 7-day inactivity pause
-    - cron: '0 2 * * 1'
-  workflow_dispatch: # Allows manual trigger from GitHub UI
+    # Chạy 2 lần mỗi tuần vào thứ Hai và thứ Năm lúc 02:00 UTC (09:00 AM giờ Việt Nam)
+    # Giúp reset chu kỳ 7 ngày của Supabase một cách an toàn tuyệt đối, tránh rủi ro nếu trễ lịch
+    - cron: '0 2 * * 1,4'
+  workflow_dispatch: # Cho phép bấm chạy thử thủ công từ giao diện GitHub Action
 
 jobs:
   keep-alive:
