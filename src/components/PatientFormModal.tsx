@@ -81,15 +81,22 @@ export const PatientFormModal: React.FC<PatientFormModalProps> = ({
   // IBD labs state
   const [ibdLabs, setIbdLabs] = useState<IBDLabData>(initialData?.ibdLabs || {});
 
-  // IBS labs state
-  const [ibsLabs, setIbsLabs] = useState<IBSLabData>(initialData?.ibsLabs || {
-    romeIVSubtype: 'IBS-D',
-    bristolStoolScale: 6,
-    stoolFrequencyPerDay: 3,
-    painRelievedAfterDefecation: true,
-    bloatingSeverity: 'Vừa',
-    antiTtgIgA: 'Âm tính',
-    stoolCultureParasite: 'Âm tính'
+  // IBS evaluation active toggle (false for liver/IBD by default)
+  const [hasIbsEvaluation, setHasIbsEvaluation] = useState<boolean>(() => {
+    if (!initialData) return false;
+    return Boolean(
+      (initialData.primaryCategory === 'ibs' || initialData.primaryCategory === 'mixed' || initialData.ibsLabs) &&
+      initialData.ibsLabs?.romeIVSubtype &&
+      initialData.ibsLabs.romeIVSubtype !== 'Bình thường (Không mắc IBS)'
+    );
+  });
+
+  // IBS labs state (empty by default for new patient and liver patients)
+  const [ibsLabs, setIbsLabs] = useState<IBSLabData>(() => {
+    if (initialData?.ibsLabs && initialData.ibsLabs.romeIVSubtype && initialData.ibsLabs.romeIVSubtype !== 'Bình thường (Không mắc IBS)') {
+      return initialData.ibsLabs;
+    }
+    return {};
   });
 
   // Treatment state
@@ -115,13 +122,15 @@ export const PatientFormModal: React.FC<PatientFormModalProps> = ({
       setDoctorInCharge(initialData.doctorInCharge || '');
       setLiverLabs(initialData.liverLabs || {});
       setIbdLabs(initialData.ibdLabs || {});
-      setIbsLabs(initialData.ibsLabs || {
-        romeIVSubtype: 'IBS-D',
-        bristolStoolScale: 6,
-        stoolFrequencyPerDay: 3,
-        painRelievedAfterDefecation: true,
-        bloatingSeverity: 'Vừa',
-      });
+      
+      const hasIbs = Boolean(
+        (initialData.primaryCategory === 'ibs' || initialData.primaryCategory === 'mixed' || initialData.ibsLabs) &&
+        initialData.ibsLabs?.romeIVSubtype &&
+        initialData.ibsLabs.romeIVSubtype !== 'Bình thường (Không mắc IBS)'
+      );
+      setHasIbsEvaluation(hasIbs);
+      setIbsLabs(hasIbs && initialData.ibsLabs ? initialData.ibsLabs : {});
+
       setTreatmentNotes(initialData.treatmentNotes || '');
       setMedicationsStr(initialData.medications?.join('\n') || '');
       setDietaryPlan(initialData.dietaryPlan || '');
@@ -141,13 +150,9 @@ export const PatientFormModal: React.FC<PatientFormModalProps> = ({
       setDoctorInCharge('Bác sĩ Đỗ Trung Hiếu');
       setLiverLabs({ ast: 45, alt: 55, platelets: 220 });
       setIbdLabs({});
-      setIbsLabs({
-        romeIVSubtype: 'IBS-D',
-        bristolStoolScale: 6,
-        stoolFrequencyPerDay: 3,
-        painRelievedAfterDefecation: true,
-        bloatingSeverity: 'Vừa',
-      });
+      // For new patient (defaults to Liver), do NOT enable IBS evaluation!
+      setHasIbsEvaluation(false);
+      setIbsLabs({});
       setTreatmentNotes('');
       setMedicationsStr('');
       setDietaryPlan('');
@@ -207,7 +212,7 @@ export const PatientFormModal: React.FC<PatientFormModalProps> = ({
       doctorInCharge: doctorInCharge.trim(),
       liverLabs: primaryCategory === 'liver' || primaryCategory === 'mixed' || Object.keys(liverLabs).length > 0 ? calculatedLiverLabs : undefined,
       ibdLabs: primaryCategory === 'ibd' || primaryCategory === 'mixed' || Object.keys(ibdLabs).length > 0 ? ibdLabs : undefined,
-      ibsLabs: primaryCategory === 'ibs' || primaryCategory === 'mixed' || Object.keys(ibsLabs).length > 0 ? ibsLabs : undefined,
+      ibsLabs: (hasIbsEvaluation && ibsLabs.romeIVSubtype && ibsLabs.romeIVSubtype !== 'Bình thường (Không mắc IBS)') ? ibsLabs : undefined,
       treatmentNotes: treatmentNotes.trim(),
       medications,
       dietaryPlan: dietaryPlan.trim(),
@@ -296,9 +301,15 @@ export const PatientFormModal: React.FC<PatientFormModalProps> = ({
             }`}
           >
             <Zap className="h-4 w-4 text-rose-500" />
-            <span>4. Đánh Giá IBS (Ruột Kích Thích)</span>
-            {primaryCategory === 'ibs' && (
-              <span className="h-1.5 w-1.5 rounded-full bg-rose-500"></span>
+            <span>4. Đánh Giá IBS</span>
+            {hasIbsEvaluation && ibsLabs.romeIVSubtype && ibsLabs.romeIVSubtype !== 'Bình thường (Không mắc IBS)' ? (
+              <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-rose-100 text-rose-800">
+                {ibsLabs.romeIVSubtype}
+              </span>
+            ) : (
+              <span className="text-[10px] font-semibold px-1.5 py-0.2 rounded-full bg-slate-100 text-slate-500">
+                Bình thường
+              </span>
             )}
           </button>
 
@@ -439,7 +450,14 @@ export const PatientFormModal: React.FC<PatientFormModalProps> = ({
                       name="primaryCategory"
                       value="liver"
                       checked={primaryCategory === 'liver'}
-                      onChange={() => setPrimaryCategory('liver')}
+                      onChange={() => {
+                        setPrimaryCategory('liver');
+                        setHasIbsEvaluation(false);
+                        setIbsLabs({});
+                        if (specificDiagnosis.includes('IBS') || specificDiagnosis.includes('Crohn')) {
+                          setSpecificDiagnosis('Viêm gan B mạn (CHB)');
+                        }
+                      }}
                       className="sr-only"
                     />
                     <div className="flex items-center gap-1.5 text-sky-700 font-bold text-sm">
@@ -459,7 +477,14 @@ export const PatientFormModal: React.FC<PatientFormModalProps> = ({
                       name="primaryCategory"
                       value="ibd"
                       checked={primaryCategory === 'ibd'}
-                      onChange={() => setPrimaryCategory('ibd')}
+                      onChange={() => {
+                        setPrimaryCategory('ibd');
+                        setHasIbsEvaluation(false);
+                        setIbsLabs({});
+                        if (!specificDiagnosis.includes('Crohn') && !specificDiagnosis.includes('đại tràng')) {
+                          setSpecificDiagnosis("Bệnh Crohn (Crohn's Disease)");
+                        }
+                      }}
                       className="sr-only"
                     />
                     <div className="flex items-center gap-1.5 text-rose-700 font-bold text-sm">
@@ -479,7 +504,22 @@ export const PatientFormModal: React.FC<PatientFormModalProps> = ({
                       name="primaryCategory"
                       value="ibs"
                       checked={primaryCategory === 'ibs'}
-                      onChange={() => setPrimaryCategory('ibs')}
+                      onChange={() => {
+                        setPrimaryCategory('ibs');
+                        setHasIbsEvaluation(true);
+                        if (!ibsLabs.romeIVSubtype || ibsLabs.romeIVSubtype === 'Bình thường (Không mắc IBS)') {
+                          setIbsLabs({
+                            romeIVSubtype: 'IBS-D',
+                            bristolStoolScale: 6,
+                            stoolFrequencyPerDay: 3,
+                            painRelievedAfterDefecation: true,
+                            bloatingSeverity: 'Vừa',
+                          });
+                        }
+                        if (!specificDiagnosis.includes('IBS')) {
+                          setSpecificDiagnosis('IBS thể tiêu chảy (IBS-D)');
+                        }
+                      }}
                       className="sr-only"
                     />
                     <div className="flex items-center gap-1.5 text-amber-700 font-bold text-sm">
@@ -499,7 +539,10 @@ export const PatientFormModal: React.FC<PatientFormModalProps> = ({
                       name="primaryCategory"
                       value="mixed"
                       checked={primaryCategory === 'mixed'}
-                      onChange={() => setPrimaryCategory('mixed')}
+                      onChange={() => {
+                        setPrimaryCategory('mixed');
+                        setHasIbsEvaluation(true);
+                      }}
                       className="sr-only"
                     />
                     <div className="flex items-center gap-1.5 text-purple-700 font-bold text-sm">
@@ -1277,40 +1320,224 @@ export const PatientFormModal: React.FC<PatientFormModalProps> = ({
           {/* TAB 4: IBS ASSESSMENT */}
           {activeTab === 'ibs' && (
             <div className="space-y-5 animate-in fade-in duration-150">
-              {/* Rome IV Subtype selector */}
-              <div>
-                <label className="block text-xs font-bold text-slate-800 mb-2">
-                  Phân Thể Hội Chứng Ruột Kích Thích (Tiêu Chuẩn Rome IV)
-                </label>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  {[
-                    { id: 'IBS-D', label: 'IBS-D (Tiêu chảy)', desc: '>25% phân lỏng (Bristol 6-7), <25% phân cứng' },
-                    { id: 'IBS-C', label: 'IBS-C (Táo bón)', desc: '>25% phân cứng (Bristol 1-2), <25% phân lỏng' },
-                    { id: 'IBS-M', label: 'IBS-M (Hỗn hợp)', desc: '>25% phân cứng VÀ >25% phân lỏng' },
-                    { id: 'IBS-U', label: 'IBS-U (Không phân loại)', desc: 'Không đủ tiêu chuẩn các nhóm trên' },
-                  ].map((item) => (
-                    <label
-                      key={item.id}
-                      className={`p-3 rounded-xl border cursor-pointer transition ${
-                        ibsLabs.romeIVSubtype === item.id
-                          ? 'border-amber-500 bg-amber-50/80 ring-2 ring-amber-500/20'
-                          : 'border-slate-200 hover:bg-slate-50'
-                      }`}
+              {/* IBS EVALUATION TOGGLE / STATUS SELECTOR */}
+              <div className="p-4 rounded-2xl border border-slate-200 bg-slate-50/80 space-y-3">
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <div className="flex items-center gap-2">
+                    <div className="p-2 bg-rose-100 text-rose-700 rounded-xl">
+                      <Zap className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-bold text-slate-900">
+                        Đánh Giá Hội Chứng Ruột Kích Thích (IBS Workup)
+                      </h4>
+                      <p className="text-xs text-slate-500">
+                        {primaryCategory === 'liver' 
+                          ? 'Mặc định cho ca bệnh gan mật: Tiêu hóa bình thường (Bỏ qua đánh giá IBS)' 
+                          : 'Đánh giá rối loạn nhu động ruột chức năng theo tiêu chuẩn Rome IV'}
+                      </p>
+                    </div>
+                  </div>
+
+                  {hasIbsEvaluation && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setHasIbsEvaluation(false);
+                        setIbsLabs({});
+                      }}
+                      className="text-xs font-semibold px-3 py-1.5 rounded-xl border border-emerald-300 bg-white text-emerald-800 hover:bg-emerald-50 transition flex items-center gap-1.5 shadow-2xs"
                     >
-                      <input
-                        type="radio"
-                        name="romeIVSubtype"
-                        value={item.id}
-                        checked={ibsLabs.romeIVSubtype === item.id}
-                        onChange={() => setIbsLabs({ ...ibsLabs, romeIVSubtype: item.id as any })}
-                        className="sr-only"
-                      />
-                      <div className="font-bold text-sm text-amber-800">{item.label}</div>
-                      <div className="text-[11px] text-slate-500 mt-1">{item.desc}</div>
-                    </label>
-                  ))}
+                      <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
+                      <span>Đặt về: Bình thường (Bỏ đánh giá IBS)</span>
+                    </button>
+                  )}
+                </div>
+
+                {/* 2 Main Choice Cards */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                  <label
+                    onClick={() => {
+                      setHasIbsEvaluation(false);
+                      setIbsLabs({});
+                    }}
+                    className={`p-3.5 rounded-2xl border cursor-pointer transition flex items-start gap-3 select-none ${
+                      !hasIbsEvaluation
+                        ? 'border-emerald-500 bg-emerald-50/90 ring-2 ring-emerald-500/20 shadow-xs'
+                        : 'border-slate-200 bg-white hover:bg-slate-50'
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="hasIbsEvaluationRadio"
+                      checked={!hasIbsEvaluation}
+                      onChange={() => {
+                        setHasIbsEvaluation(false);
+                        setIbsLabs({});
+                      }}
+                      className="sr-only"
+                    />
+                    <div className="p-2 rounded-xl bg-emerald-100 text-emerald-700 shrink-0 mt-0.5">
+                      <CheckCircle2 className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-sm text-slate-900">
+                          Bình thường / Bỏ qua đánh giá IBS
+                        </span>
+                        {!hasIbsEvaluation && (
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-200 text-emerald-900">
+                            Đang áp dụng
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs text-slate-600 mt-1 leading-relaxed">
+                        Bệnh nhân đại tiện bình thường, không đau bụng mạn tính. <strong>Không lưu dữ liệu IBS</strong> vào hồ sơ (phù hợp cho ca bệnh gan).
+                      </p>
+                    </div>
+                  </label>
+
+                  <label
+                    onClick={() => {
+                      setHasIbsEvaluation(true);
+                      if (!ibsLabs.romeIVSubtype || ibsLabs.romeIVSubtype === 'Bình thường (Không mắc IBS)') {
+                        setIbsLabs({
+                          romeIVSubtype: 'IBS-D',
+                          bristolStoolScale: 6,
+                          stoolFrequencyPerDay: 3,
+                          painRelievedAfterDefecation: true,
+                          bloatingSeverity: 'Vừa',
+                        });
+                      }
+                    }}
+                    className={`p-3.5 rounded-2xl border cursor-pointer transition flex items-start gap-3 select-none ${
+                      hasIbsEvaluation
+                        ? 'border-amber-500 bg-amber-50/90 ring-2 ring-amber-500/20 shadow-xs'
+                        : 'border-slate-200 bg-white hover:bg-slate-50'
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="hasIbsEvaluationRadio"
+                      checked={hasIbsEvaluation}
+                      onChange={() => {
+                        setHasIbsEvaluation(true);
+                        if (!ibsLabs.romeIVSubtype || ibsLabs.romeIVSubtype === 'Bình thường (Không mắc IBS)') {
+                          setIbsLabs({
+                            romeIVSubtype: 'IBS-D',
+                            bristolStoolScale: 6,
+                            stoolFrequencyPerDay: 3,
+                            painRelievedAfterDefecation: true,
+                            bloatingSeverity: 'Vừa',
+                          });
+                        }
+                      }}
+                      className="sr-only"
+                    />
+                    <div className="p-2 rounded-xl bg-amber-100 text-amber-700 shrink-0 mt-0.5">
+                      <Zap className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-sm text-slate-900">
+                          Đánh giá Ruột kích thích (Rome IV & Bristol)
+                        </span>
+                        {hasIbsEvaluation && (
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-200 text-amber-900">
+                            Đang đánh giá
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs text-slate-600 mt-1 leading-relaxed">
+                        Bệnh nhân có đau bụng tái diễn $\ge 1$ ngày/tuần kèm rối loạn đại tiện (tiêu chảy, táo bón hoặc thể hỗn hợp).
+                      </p>
+                    </div>
+                  </label>
                 </div>
               </div>
+
+              {!hasIbsEvaluation ? (
+                /* Reassuring Banner for Normal / Skipped IBS */
+                <div className="p-8 rounded-2xl bg-emerald-50/60 border border-emerald-200 text-center space-y-3 animate-in fade-in duration-150">
+                  <div className="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-700 mx-auto flex items-center justify-center shadow-xs">
+                    <CheckCircle2 className="h-6 w-6" />
+                  </div>
+                  <div className="space-y-1">
+                    <h5 className="font-bold text-sm text-emerald-950">
+                      Bệnh nhân có chức năng đường ruột bình thường
+                    </h5>
+                    <p className="text-xs text-slate-600 max-w-lg mx-auto leading-relaxed">
+                      Hồ sơ ca bệnh này sẽ <strong>hoàn toàn không chứa dữ liệu IBS</strong>. Danh sách theo dõi và bảng diễn tiến sẽ ưu tiên chỉ số chuyên khoa <strong>Gan Mật</strong> (Men gan AST/ALT, Điểm FIB-4, Tải lượng virus HBV/HCV, Bệnh gan tự miễn).
+                    </p>
+                  </div>
+                  <div className="pt-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setHasIbsEvaluation(true);
+                        setIbsLabs({
+                          romeIVSubtype: 'IBS-D',
+                          bristolStoolScale: 6,
+                          stoolFrequencyPerDay: 3,
+                          painRelievedAfterDefecation: true,
+                          bloatingSeverity: 'Vừa',
+                        });
+                      }}
+                      className="inline-flex items-center gap-1.5 px-4 py-2 bg-white border border-slate-200 hover:border-amber-400 text-slate-700 hover:text-amber-800 rounded-xl text-xs font-semibold shadow-2xs transition"
+                    >
+                      <Zap className="h-3.5 w-3.5 text-amber-600" />
+                      <span>Kích hoạt đánh giá IBS nếu bệnh nhân có triệu chứng tiêu chảy / táo bón kèm theo</span>
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                /* Full Rome IV Subtype selector */
+                <div className="space-y-5">
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <label className="block text-xs font-bold text-slate-800">
+                        Phân Thể Hội Chứng Ruột Kích Thích (Tiêu Chuẩn Rome IV)
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setHasIbsEvaluation(false);
+                          setIbsLabs({});
+                        }}
+                        className="text-xs text-slate-500 hover:text-rose-600 font-semibold"
+                      >
+                        Bỏ chọn / Đặt về bình thường
+                      </button>
+                    </div>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                      {[
+                        { id: 'IBS-D', label: 'IBS-D (Tiêu chảy)', desc: '>25% phân lỏng (Bristol 6-7), <25% phân cứng' },
+                        { id: 'IBS-C', label: 'IBS-C (Táo bón)', desc: '>25% phân cứng (Bristol 1-2), <25% phân lỏng' },
+                        { id: 'IBS-M', label: 'IBS-M (Hỗn hợp)', desc: '>25% phân cứng VÀ >25% phân lỏng' },
+                        { id: 'IBS-U', label: 'IBS-U (Không phân loại)', desc: 'Không đủ tiêu chuẩn các nhóm trên' },
+                      ].map((item) => (
+                        <label
+                          key={item.id}
+                          className={`p-3 rounded-xl border cursor-pointer transition ${
+                            ibsLabs.romeIVSubtype === item.id
+                              ? 'border-amber-500 bg-amber-50/80 ring-2 ring-amber-500/20'
+                              : 'border-slate-200 hover:bg-slate-50'
+                          }`}
+                        >
+                          <input
+                            type="radio"
+                            name="romeIVSubtype"
+                            value={item.id}
+                            checked={ibsLabs.romeIVSubtype === item.id}
+                            onChange={() => setIbsLabs({ ...ibsLabs, romeIVSubtype: item.id as any })}
+                            className="sr-only"
+                          />
+                          <div className="font-bold text-sm text-amber-800">{item.label}</div>
+                          <div className="text-[11px] text-slate-500 mt-1">{item.desc}</div>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
 
               {/* Bristol Stool Scale Picker */}
               <div>
@@ -1443,6 +1670,8 @@ export const PatientFormModal: React.FC<PatientFormModalProps> = ({
               </div>
             </div>
           )}
+        </div>
+      )}
 
           {/* TAB 5: TREATMENT & NOTES */}
           {activeTab === 'treatment' && (

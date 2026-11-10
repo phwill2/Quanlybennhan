@@ -110,7 +110,7 @@ export interface IBDLabData {
 }
 
 export interface IBSLabData {
-  romeIVSubtype?: 'IBS-D' | 'IBS-C' | 'IBS-M' | 'IBS-U';
+  romeIVSubtype?: 'IBS-D' | 'IBS-C' | 'IBS-M' | 'IBS-U' | 'Bình thường (Không mắc IBS)';
   bristolStoolScale?: BristolStoolType;
   stoolFrequencyPerDay?: number; // Số lần đi ngoài / ngày
   abdominalPainDaysPerMonth?: number; // Số ngày đau bụng / tháng (tiêu chuẩn Rome IV: >= 1 ngày/tuần trong 3 tháng)
